@@ -1,6 +1,7 @@
 package main
 
 var debugMode = false
+var AkoHelp = true
 
 type gameMode int
 

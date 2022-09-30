@@ -1,7 +1,10 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"strconv"
+
 	"github.com/EndlessCheng/mahjong-helper/util"
 	"github.com/EndlessCheng/mahjong-helper/util/model"
 	"github.com/fatih/color"
@@ -181,6 +184,9 @@ type roundData struct {
 
 	// 本场数，从 0 开始算
 	benNumber int
+
+	// 供托，从 0 开始
+	kyotaku int
 
 	// 场风
 	roundWindTile int
@@ -511,6 +517,11 @@ func (d *roundData) analysis() error {
 	if analysisCache := getAnalysisCache(d.parser.GetSelfSeat()); analysisCache != nil {
 		currentRoundCache = analysisCache.wholeGameCache[d.roundNumber][d.benNumber]
 	}
+	// if AkoHelp {
+	c := NewContext()
+	c.InitCommonTerminal()
+
+	// }
 
 	switch {
 	case d.parser.IsInit():
@@ -520,6 +531,21 @@ func (d *roundData) analysis() error {
 		}
 
 		roundNumber, benNumber, dealer, doraIndicators, hands, numRedFives := d.parser.ParseInit()
+
+		if AkoHelp {
+			cmdstring := fmt.Sprintf("%s %d", "docker exec -it 2f2 ./system.exe pipe_detailed /akochan-reviewer/tactics.json", d.parser.GetSelfSeat())
+			fmt.Println(c.SendCmdWithOut(cmdstring))
+			//cmdstring := "{\"type\":\"dahai\",\"actor\":0,\"pai\":\"F\",\"tsumogiri\":false}"
+			v := Ako{
+				aKotype:    "start_game",
+				kyokuFirst: 0,
+				akaFlag:    true,
+				names:      []string{"player1", "player2", "player3", "player4"},
+			}
+			cmdJson, _ := json.Marshal(v)
+			fmt.Println(c.SendCmdWithOut(string(cmdJson)))
+		}
+
 		switch d.parser.GetDataSourceType() {
 		case dataSourceTypeTenhou:
 			d.reset(roundNumber, benNumber, dealer)
@@ -537,6 +563,19 @@ func (d *roundData) analysis() error {
 				newDealer := (4 - d.parser.GetSelfSeat() + roundNumber) % 4
 				// 新的一局
 				d.reset(roundNumber, benNumber, newDealer)
+			}
+			if AkoHelp {
+
+				v := Ako{
+					aKotype:    "start_kyoku",
+					bakaze:     strconv.Itoa(d.roundWindTile), //TODO
+					doraMarker: strconv.Itoa(doraIndicators[0]),
+					kyoku:      roundNumber,
+					honba:      benNumber,
+					// kyotaku:
+				}
+				cmdJson, _ := json.Marshal(v)
+				fmt.Println(c.SendCmdWithOut(string(cmdJson)))
 			}
 		default:
 			panic("not impl!")
@@ -699,6 +738,8 @@ func (d *roundData) analysis() error {
 		who := d.parser.ParseReach()
 		d.players[who].isReached = true
 		d.players[who].canIppatsu = true
+
+		d.kyotaku += 1
 		//case "AGARI", "RYUUKYOKU":
 		//	// 某人和牌或流局，round 结束
 		//case "PROF":
@@ -884,9 +925,9 @@ func (d *roundData) analysis() error {
 		//	return nil
 		//}
 
-		if !debugMode {
-			clearConsole()
-		}
+		// if !debugMode {
+		// 	clearConsole()
+		// }
 
 		// 牌谱模式下，打印舍牌推荐
 		if d.gameMode == gameModeRecord {
@@ -894,9 +935,9 @@ func (d *roundData) analysis() error {
 		}
 
 		// 打印他家舍牌信息
-		d.printDiscards()
-		fmt.Println()
-		riskTables.printWithHands(d.counts, d.leftCounts)
+		// d.printDiscards()
+		// fmt.Println()
+		// riskTables.printWithHands(d.counts, d.leftCounts)
 
 		if d.gameMode == gameModeMatch && !canBeMeld {
 			return nil
@@ -923,6 +964,8 @@ func (d *roundData) analysis() error {
 		for i, who := range whos {
 			fmt.Println(d.players[who].name, points[i])
 		}
+		// 重制供托
+		d.kyotaku = 0
 	case d.parser.IsRyuukyoku():
 		// TODO
 		d.parser.ParseRyuukyoku()

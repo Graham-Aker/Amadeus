@@ -31,7 +31,7 @@
 
 分下面几步：
 
-1. 在浏览器地址栏中输入 `chrome://flags/#allow-insecure-localhost`，然后点击高亮那一项的「启用」按钮（[若没有该项见此](https://github.com/EndlessCheng/mahjong-helper/issues/108)）。该功能仅限基于 Chrome 内核开发的浏览器。
+1. 在浏览器地址栏中输入 `chrome://flags/#allow-insecure-localhost`，然后把高亮那一项从「已禁用」改为「已启用」（[若没有该项见此](https://github.com/EndlessCheng/mahjong-helper/issues/108)）。该功能仅限基于 Chrome 内核开发的浏览器。
    
    （不同浏览器/版本的描述可能不一样，如果打开的页面是英文的话，高亮的就是 `Allow invalid certificates for resources loaded from localhost`，把它的 Disabled 改成 Enabled）
    
@@ -270,7 +270,7 @@
 雀魂收发的消息是 protobuf，接收的消息一部分为含有类型的通知消息，另一部分为不含有类型的请求响应消息，
 对于后者需要获取雀魂发送的消息以获得响应消息类型。
 
-也就是说需要将雀魂发送和接收的消息都发给 mahjong-helper 服务器。
+也就是说需要将雀魂发送和接收的消息都发给助手。
 
 类似天凤，搜索 `WebSocket` 找到下方的 `_socket.onmessage` 和 `_socket.send`，添加代码。
 

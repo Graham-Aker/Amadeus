@@ -4,14 +4,6 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"github.com/EndlessCheng/mahjong-helper/platform/tenhou"
-	"github.com/EndlessCheng/mahjong-helper/util"
-	"github.com/EndlessCheng/mahjong-helper/util/debug"
-	"github.com/EndlessCheng/mahjong-helper/util/model"
-	"github.com/fatih/color"
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
-	"github.com/labstack/gommon/log"
 	"io/ioutil"
 	stdLog "log"
 	"net"
@@ -20,6 +12,15 @@ import (
 	"path/filepath"
 	"strconv"
 	"time"
+
+	"github.com/EndlessCheng/mahjong-helper/platform/tenhou"
+	"github.com/EndlessCheng/mahjong-helper/util"
+	"github.com/EndlessCheng/mahjong-helper/util/debug"
+	"github.com/EndlessCheng/mahjong-helper/util/model"
+	"github.com/fatih/color"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
+	"github.com/labstack/gommon/log"
 )
 
 const defaultPort = 12121
@@ -169,6 +170,7 @@ func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 		}
 
 		originJSON := string(msg)
+		fmt.Println(originJSON)
 		if h.log != nil && debug.Lo == 0 {
 			h.log.Info(originJSON)
 		} else {
@@ -518,6 +520,14 @@ func runServer(isHTTPS bool, port int) (err error) {
 	go h.runAnalysisTenhouMessageTask()
 	go h.runAnalysisMajsoulMessageTask()
 
+	// c := NewContext()
+	// c.InitCommonTerminal()
+
+	// cmdstring := "docker exec -it 2f2 ./system.exe pipe_detailed /akochan-reviewer/tactics.json 3"
+	// fmt.Println(c.SendCmdWithOut(cmdstring))
+	// cmdstring = "{\"type\":\"dahai\",\"actor\":0,\"pai\":\"F\",\"tsumogiri\":false}"
+	// fmt.Println(c.SendCmdWithOut(cmdstring))
+
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORS())
 	e.GET("/", h.index)
@@ -547,6 +557,7 @@ func runServer(isHTTPS bool, port int) (err error) {
 		}
 		return
 	}
+
 	return nil
 }
 
